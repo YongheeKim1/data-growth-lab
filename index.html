@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>데이터 성장 랩 · Data Growth Lab</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+    --txt:#e7e9ee; --muted:#9aa3b2; --accent:#ff7a18; --accent2:#ffb347;
+    --green:#3ecf8e; --blue:#5b9dff; --purple:#b08cff; --red:#ff6b6b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+    font-family:'Pretendard','Segoe UI',-apple-system,Roboto,'Malgun Gothic',sans-serif;}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 18px 80px}
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;justify-content:space-between;margin-bottom:18px}
+  h1{font-size:26px;margin:0;letter-spacing:-.5px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:14px;margin-top:4px}
+  /* stat cards */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .stat .k{color:var(--muted);font-size:12px;letter-spacing:.3px}
+  .stat .v{font-size:30px;font-weight:800;margin-top:6px}
+  .stat .v small{font-size:14px;font-weight:600;color:var(--muted)}
+  .flame{color:var(--accent)}
+  .progwrap{height:8px;background:var(--panel2);border-radius:6px;overflow:hidden;margin-top:10px}
+  .progbar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%}
+  /* tabs */
+  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:8px 0 18px;flex-wrap:wrap}
+  .tab{padding:10px 16px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;font-weight:600;font-size:14px}
+  .tab.active{color:var(--txt);border-bottom-color:var(--accent)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:14px}
+  .pill{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+  .pill.p{background:rgba(176,140,255,.12);color:var(--purple);border-color:transparent}
+  /* today */
+  .todaytask{font-size:19px;line-height:1.5;margin:12px 0 18px;font-weight:600}
+  .btn{appearance:none;border:none;cursor:pointer;font-weight:700;font-size:15px;border-radius:10px;padding:13px 22px;background:var(--accent);color:#1a1205}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+  .btn.done{background:var(--green);color:#06281a}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .msg{margin-top:14px;color:var(--accent2);font-weight:600;font-size:14px;min-height:18px}
+  /* roadmap */
+  .phase{margin-bottom:10px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .phase>summary{cursor:pointer;list-style:none;padding:14px 16px;background:var(--panel2);
+    display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700}
+  .phase>summary::-webkit-details-marker{display:none}
+  .phase .pbar{flex:1;height:6px;background:#11141a;border-radius:6px;overflow:hidden;margin:0 12px;max-width:220px}
+  .phase .pbar>i{display:block;height:100%;background:var(--green)}
+  .week{padding:6px 14px 12px}
+  .week h4{margin:14px 0 2px;font-size:14px}
+  .week .goal{color:var(--muted);font-size:12.5px;margin-bottom:8px}
+  .day{display:flex;gap:10px;align-items:flex-start;padding:7px 8px;border-radius:8px}
+  .day:hover{background:var(--panel2)}
+  .day input{margin-top:3px;width:17px;height:17px;accent-color:var(--green);cursor:pointer;flex:none}
+  .day label{font-size:13.5px;line-height:1.45;cursor:pointer}
+  .day.done label{color:var(--muted);text-decoration:line-through}
+  .day .dl{color:var(--accent2);font-weight:700;font-size:12px;margin-right:4px}
+  .day.cur{background:rgba(255,122,24,.10);outline:1px solid rgba(255,122,24,.4)}
+  /* resources */
+  .res h3{margin:18px 0 8px;font-size:15px;color:var(--accent2)}
+  .res ul{margin:0;padding-left:18px;line-height:1.9}
+  .res li small{color:var(--muted)}
+  /* log grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,16px);gap:5px;margin-top:14px}
+  .cell{width:16px;height:16px;border-radius:4px;background:var(--panel2);border:1px solid var(--line)}
+  .cell.done{background:var(--green);border-color:transparent}
+  .cell.miss{background:rgba(255,107,107,.25)}
+  .legend{color:var(--muted);font-size:12px;margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
+  .footnote{color:var(--muted);font-size:12px;margin-top:8px}
+  .settings{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  input[type=date]{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px}
+  .kbd{font-family:ui-monospace,monospace;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><span class="em">데이터</span> 성장 랩 <span style="font-size:14px;color:var(--muted)">· Data Growth Lab</span></h1>
+      <div class="sub">기획·지표 설계 우선 트랙 · 하루 1시간 · 26주 · "배운 건 무조건 내 제품에 적용한다"</div>
+    </div>
+    <div class="row">
+      <button class="btn ghost" onclick="exportData()">백업</button>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="k">진행 일차 (평일 기준)</div><div class="v" id="dayNum">–<small> / 130일</small></div></div>
+    <div class="stat"><div class="k">연속 학습</div><div class="v"><span id="streak">0</span><small> 일</small> <span class="flame">🔥</span></div></div>
+    <div class="stat"><div class="k">전체 진도</div><div class="v"><span id="pct">0</span><small>%</small></div>
+      <div class="progwrap"><div class="progbar" id="progbar"></div></div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-t="today">오늘</div>
+    <div class="tab" data-t="road">로드맵</div>
+    <div class="tab" data-t="res">학습 자료</div>
+    <div class="tab" data-t="log">기록</div>
+    <div class="tab" data-t="set">설정</div>
+  </div>
+
+  <!-- TODAY -->
+  <section id="today">
+    <div class="panel">
+      <div class="row" style="justify-content:space-between">
+        <div><span class="pill p" id="todayPhase">Phase</span> <span class="pill" id="todayWeek">Week</span></div>
+        <div class="pill" id="todayDate"></div>
+      </div>
+      <div class="goal" id="todayGoal" style="color:var(--muted);font-size:13px;margin-top:10px"></div>
+      <div class="todaytask" id="todayTask">오늘의 숙제를 불러오는 중…</div>
+      <div class="row">
+        <button class="btn" id="doneBtn" onclick="toggleToday()">오늘 숙제 완료 ✓</button>
+        <a class="btn ghost" id="slackLink" href="https://mail.google.com/" target="_blank">오늘 받은 메일 보기 →</a>
+      </div>
+      <div class="msg" id="todayMsg"></div>
+    </div>
+    <div class="panel" style="font-size:13.5px;color:var(--muted);line-height:1.7">
+      <b style="color:var(--txt)">오늘의 원칙</b> · 1시간은 짧다. 그래서 ① 먼저 5분 어제 복습 → ② 45분 오늘 숙제 → ③ 10분 "오늘 배운 것을 내 제품에 어떻게 쓸까?" 한 줄 메모. 이 마지막 한 줄이 당신을 분석가에서 <b style="color:var(--accent2)">데이터 기획자</b>로 만든다.
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section id="road" style="display:none"></section>
+
+  <!-- RESOURCES -->
+  <section id="res" style="display:none">
+    <div class="panel res">
+      <div style="color:var(--muted);font-size:13px;margin-bottom:6px">엄선한 자료만. 더 늘리지 말 것 — 많은 자료가 곧 시간 낭비다. 아래에서 트랙별로 하나씩만 깊게 판다.</div>
+
+      <h3>🧭 로드맵 · 큰 그림</h3>
+      <ul>
+        <li><a href="https://roadmap.sh/data-analyst" target="_blank">roadmap.sh · Data Analyst</a> <small>— 전체 스킬 지도(영문, 무료)</small></li>
+        <li><a href="https://codebasics.io/blog/data-analyst-roadmap-2026-skills-tools-and-a-step-by-step-learning-plan" target="_blank">Codebasics 2026 로드맵</a> <small>— 단계별 학습 계획</small></li>
+        <li><a href="https://www.inflearn.com/roadmaps/66" target="_blank">인프런 데이터 전과정 로드맵</a> <small>— 한국어 강의 경로</small></li>
+      </ul>
+
+      <h3>🎯 기획·지표 설계 (우리 우선 트랙)</h3>
+      <ul>
+        <li><a href="https://www.aakashg.com/metrics-for-product-managers/" target="_blank">Aakash Gupta · Metrics for PMs</a> <small>— 지표 설계 바이블(영문)</small></li>
+        <li><a href="https://www.productcompass.pm/p/the-product-analytics-playbook-aarrr" target="_blank">Product Analytics Playbook (AARRR·HEART·Cohort)</a></li>
+        <li><a href="https://amplitude.com/north-star" target="_blank">Amplitude · North Star Playbook</a> <small>— North Star 지표 설계</small></li>
+        <li><b>책</b> · Lean Analytics (앨리스테어 크롤) <small>— 단계별 핵심 지표</small></li>
+      </ul>
+
+      <h3>🗄 SQL 실전 (SQLD 있으니 가속)</h3>
+      <ul>
+        <li><a href="https://www.sql-practice.com/" target="_blank">sql-practice.com</a> <small>— 브라우저에서 바로, 무료</small></li>
+        <li><a href="https://datalemur.com/" target="_blank">DataLemur</a> <small>— 면접형 SQL, 난이도별</small></li>
+        <li><a href="https://www.stratascratch.com/" target="_blank">StrataScratch</a> <small>— 무료 SQL/Python 트랙</small></li>
+        <li><a href="https://school.programmers.co.kr/learn/challenges?order=recent&page=1&types=30" target="_blank">프로그래머스 SQL 고득점 Kit</a> <small>— 한국어</small></li>
+      </ul>
+
+      <h3>🐍 Python · pandas</h3>
+      <ul>
+        <li><a href="https://wikidocs.net/book/1" target="_blank">점프 투 파이썬</a> <small>— 무료 한국어 입문서</small></li>
+        <li><a href="https://www.kaggle.com/learn/pandas" target="_blank">Kaggle Learn · Pandas</a> <small>— 4시간 미니코스, 무료</small></li>
+        <li><a href="https://www.inflearn.com/ko/courses/data-science/data-analysis" target="_blank">인프런 · 데이터 분석을 위한 파이썬/판다스</a> <small>(데이터리안)</small></li>
+      </ul>
+
+      <h3>📊 통계 · A/B 테스트</h3>
+      <ul>
+        <li><a href="https://www.youtube.com/c/joshstarmer" target="_blank">StatQuest (YouTube)</a> <small>— 통계 직관, 무료 최강</small></li>
+        <li><a href="https://www.udacity.com/course/ab-testing--ud257" target="_blank">Udacity · A/B Testing</a> <small>— 무료 강의</small></li>
+        <li><a href="https://mixpanel.com/blog/product-experimentation/" target="_blank">Mixpanel · 제품 실험 가이드</a></li>
+      </ul>
+
+      <h3>🖼 데이터 스토리텔링 · 대시보드</h3>
+      <ul>
+        <li><a href="https://www.storytellingwithdata.com/" target="_blank">Storytelling with Data (사이트+블로그)</a></li>
+        <li><b>책</b> · Storytelling with Data (콜 누스바우머) / The Big Book of Dashboards</li>
+        <li><a href="https://public.tableau.com/app/discover" target="_blank">Tableau Public</a> <small>— 무료 시각화 도구 + 영감</small></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- LOG -->
+  <section id="log" style="display:none">
+    <div class="panel">
+      <b>학습 잔디</b>
+      <div class="grid" id="logGrid"></div>
+      <div class="legend">
+        <span><span class="cell done" style="display:inline-block;vertical-align:-3px"></span> 완료</span>
+        <span><span class="cell miss" style="display:inline-block;vertical-align:-3px"></span> 놓친 평일</span>
+        <span><span class="cell" style="display:inline-block;vertical-align:-3px"></span> 예정/미래</span>
+      </div>
+      <div class="footnote">완료 <b id="doneCount">0</b>일 · 놓침 <b id="missCount">0</b>일 · 최장 연속 <b id="maxStreak">0</b>일. 주말은 학습일에서 제외된다. 하루 빠져도 괜찮다 — 다음 날 다시 채우면 연속은 회복된다는 마음으로.</div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="set" style="display:none">
+    <div class="panel">
+      <b>시작일</b>
+      <div class="footnote">로드맵 1일차의 날짜. 오늘부터 시작하려면 그대로 두세요.</div>
+      <div class="settings">
+        <input type="date" id="startInput" />
+        <button class="btn ghost" onclick="saveStart()">저장</button>
+      </div>
+      <hr style="border-color:var(--line);margin:18px 0">
+      <b>데이터 백업 / 복원</b>
+      <div class="footnote">진도는 이 브라우저에만 저장됩니다. 다른 PC로 옮기거나 안전하게 보관하려면 백업하세요.</div>
+      <div class="settings">
+        <button class="btn ghost" onclick="exportData()">JSON 백업 다운로드</button>
+        <label class="btn ghost" style="cursor:pointer">복원<input type="file" accept="application/json" style="display:none" onchange="importData(event)"></label>
+        <button class="btn ghost" style="color:var(--red)" onclick="resetAll()">전체 초기화</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============================ 커리큘럼 데이터 ============================ */
+/* 26주 · 평일(월~금) 5일/주 · 하루 1시간 · 기획·지표 설계 우선 */
+const CURRICULUM = [
+ {phase:"Phase 0 · 셋업 & 방향", color:"--accent", weeks:[
+   {t:"W1 · 환경 세팅 + 학습 헌장", goal:"왜 배우는지 정의하고, 내 제품에서 풀 질문을 정한다.", days:[
+     "학습 환경 세팅: Python(Anaconda 또는 uv), VS Code, Jupyter, DBeaver 설치 후 'Hello pandas' 노트북 1개 실행.",
+     "나의 학습 헌장 1장 작성: 6개월 뒤 되고 싶은 모습 / 왜 / '매일 1시간' 규칙. 이 앱 설정에 시작일 등록.",
+     "내 직무의 데이터 지도 그리기: 내 제품/팀이 수집하는 데이터 종류와 저장 위치(DB·로그 등)를 목록화.",
+     "'내가 답하고 싶은 질문 3개' 적기 (예: 어떤 이벤트가 가장 빈번한가? 자원 사용 피크 시점은? 가장 안 쓰는 기능은?).",
+     "주간 회고 + SQLD 복습 1시간: 내가 이미 아는 SELECT/JOIN/GROUP BY를 머릿속에 정리. 다음 주 예습."]},
+ ]},
+ {phase:"Phase 1 · 지표·질문 설계 (우선 트랙)", color:"--purple", weeks:[
+   {t:"W2 · 좋은 질문과 가설", goal:"막연한 호기심을 측정·실행 가능한 질문으로 바꾼다.", days:[
+     "'좋은 분석 질문'의 조건(구체적·측정가능·실행가능) 학습. 내 질문 3개를 SMART하게 다듬기.",
+     "가설의 구조 배우기: '만약 X면 Y일 것이다, 왜냐하면 Z'. 내 제품 가설 3개 작성.",
+     "허영 지표(vanity) vs 실행 지표(actionable) 개념. 내 제품/대시보드의 허영 지표 예시 찾기.",
+     "지표 정의서 템플릿 만들기(이름/정의/계산식/주기/담당). 지표 1개 정의서 직접 작성.",
+     "주간 회고 + Lean Analytics 핵심 요약 읽기. '내 제품은 지금 어느 단계?' 한 줄."]},
+   {t:"W3 · North Star & AARRR", goal:"제품의 단 하나의 지표와 성장 깔때기를 정의한다.", days:[
+     "North Star Metric 개념 학습(Amplitude/Aakash Gupta). 조건 3가지(가치·진척·매출연결) 정리.",
+     "내 제품의 North Star 후보 3개 브레인스토밍 + 각 선정 근거.",
+     "AARRR(획득·활성화·유지·매출·추천) 프레임 학습.",
+     "내 제품을 AARRR로 매핑. 단계별 지표 1개씩.",
+     "주간 회고 + North Star + AARRR을 발표용 1페이지로 정리."]},
+   {t:"W4 · KPI 트리 & HEART", goal:"상위 목표를 실무 지표로 분해하고 UX 품질을 측정한다.", days:[
+     "KPI 트리(상위 목표 → 하위 지표 분해) 학습.",
+     "내 North Star를 KPI 트리로 2단계 분해.",
+     "HEART 프레임(행복·참여·수용·유지·과업성공) 학습.",
+     "내 제품 대시보드 UX를 HEART로 평가해보기.",
+     "주간 회고 + 가드레일 지표(guardrail) 개념 + 내 제품 가드레일 1개 정의."]},
+   {t:"W5 · 지표 종합 & 첫 산출물", goal:"공유 가능한 '지표 체계 v1' 문서를 완성한다.", days:[
+     "지표 안티패턴 학습: 평균의 함정, 비율 왜곡, 생존 편향.",
+     "코호트(cohort) 개념 기초 학습.",
+     "'내 제품 지표 체계 v1' 문서 작성 시작(North Star + KPI 트리 + AARRR).",
+     "문서 이어쓰기: 가드레일 + 안티패턴 점검 + 측정 방법.",
+     "Phase 1 회고 — 상사/동료에게 공유 가능한 수준으로 다듬기. 🎉 첫 산출물!"]},
+ ]},
+ {phase:"Phase 2 · SQL 실전", color:"--blue", weeks:[
+   {t:"W6 · SELECT·필터·집계 재실전", goal:"sql-practice.com으로 기초를 손에 익힌다.", days:[
+     "sql-practice.com 세팅 + SELECT 기본 문제 5개.",
+     "WHERE 필터/논리연산(AND/OR/IN/BETWEEN) 문제 5개.",
+     "GROUP BY + 집계함수(SUM/AVG/COUNT) 문제 5개.",
+     "HAVING + ORDER BY + LIMIT 문제 5개.",
+     "주간 회고 + 헷갈린 문제 다시 풀기."]},
+   {t:"W7 · JOIN 마스터", goal:"여러 테이블을 자유롭게 연결한다.", days:[
+     "INNER JOIN 개념 + 문제 4개.",
+     "LEFT JOIN + NULL 처리 문제 4개.",
+     "3개 이상 테이블 다중 조인 문제 3개.",
+     "DataLemur Easy SQL 3문제.",
+     "주간 회고 + 나만의 JOIN 치트시트 작성."]},
+   {t:"W8 · 서브쿼리 & CTE", goal:"복잡한 질의를 읽기 쉽게 구조화한다.", days:[
+     "서브쿼리(스칼라/IN) 문제 3개.",
+     "상관 서브쿼리(correlated) 문제 2개.",
+     "CTE(WITH) 기본 + 같은 문제를 CTE로 리팩터링.",
+     "DataLemur Medium 2문제.",
+     "주간 회고 + '서브쿼리 vs CTE 언제 무엇?' 메모."]},
+   {t:"W9 · 윈도우 함수 & 실데이터", goal:"순위·기간비교·누적을 다루고 내 제품 질문에 답한다.", days:[
+     "ROW_NUMBER/RANK/DENSE_RANK 문제 3개.",
+     "LAG/LEAD로 기간 비교 문제 2개.",
+     "누적합·이동평균(SUM OVER) 문제 2개.",
+     "W1에서 정한 내 제품 질문 1개를 쿼리로 설계(스키마 가정해도 OK).",
+     "쿼리 실행/결과 해석 + Phase 2 회고."]},
+ ]},
+ {phase:"Phase 3 · Python + pandas", color:"--green", weeks:[
+   {t:"W10 · Python 기초 (데이터용)", goal:"분석에 필요한 만큼의 파이썬만 빠르게.", days:[
+     "설치 확인 + 변수/숫자/문자열 실습(점프 투 파이썬).",
+     "리스트/딕셔너리 + 인덱싱/슬라이싱.",
+     "for / if 로 간단 로직 짜기.",
+     "함수 정의 + 재사용.",
+     "주간 회고 + 미니 연습: 리스트의 평균/최대 직접 계산."]},
+   {t:"W11 · pandas 기초", goal:"표 데이터를 불러오고 골라내고 정제한다.", days:[
+     "pandas 임포트, Series/DataFrame 만들기.",
+     "read_csv로 데이터 불러오기(샘플 데이터셋).",
+     "행/열 선택(loc/iloc) + 조건 필터.",
+     "결측치 확인/처리(isna/fillna/dropna).",
+     "주간 회고 + describe()/info()로 데이터 빠르게 파악."]},
+   {t:"W12 · pandas 변환·집계", goal:"SQL로 하던 걸 pandas로도 한다.", days:[
+     "groupby + 집계(sum/mean/count).",
+     "merge로 두 표 합치기(JOIN 대응).",
+     "pivot_table로 교차표 만들기.",
+     "날짜(datetime) 변환 + 기간 리샘플.",
+     "주간 회고 + 'SQL GROUP BY ↔ pandas groupby' 대조 메모."]},
+   {t:"W13 · 시각화", goal:"데이터를 보이게 만든다.", days:[
+     "matplotlib 기본: 선/막대 그래프.",
+     "seaborn 분포(histogram/kde).",
+     "박스플롯으로 이상치 보기.",
+     "시계열 추세 그래프 그리기.",
+     "주간 회고 + '차트 선택 가이드' 1장 정리."]},
+   {t:"W14 · 미니 EDA 프로젝트", goal:"포트폴리오 #1 — 데이터 탐색 노트북 완성.", days:[
+     "EDA 데이터셋 선정(가능하면 내 제품 데이터) + 질문 정하기.",
+     "데이터 로드 + 정제.",
+     "집계/분석으로 패턴 찾기.",
+     "시각화 3개 + 인사이트 문장화.",
+     "노트북 마무리 + Phase 3 회고. 🎉 포트폴리오 #1!"]},
+ ]},
+ {phase:"Phase 4 · 통계 & 실험(A/B)", color:"--accent2", weeks:[
+   {t:"W15 · 기술통계", goal:"숫자를 요약하고 '상관 ≠ 인과'를 체화한다.", days:[
+     "중심경향/산포(평균·중앙값·분산·표준편차) + pandas로 계산.",
+     "분포(정규/치우침/꼬리) 시각화.",
+     "상관계수 + '상관 ≠ 인과' 사례 학습.",
+     "내 제품 데이터에서 상관 1쌍 탐색해보기.",
+     "주간 회고."]},
+   {t:"W16 · 추론 기초", goal:"표본으로 모집단을 추론하는 논리를 익힌다.", days:[
+     "모집단 vs 표본 + 표집 직관(StatQuest).",
+     "신뢰구간의 의미.",
+     "가설검정 구조(귀무가설/대립가설).",
+     "p-value 흔한 오해 바로잡기.",
+     "주간 회고."]},
+   {t:"W17 · A/B 테스트 설계", goal:"실험을 '설계'할 줄 안다.", days:[
+     "A/B 테스트 전체 흐름(Udacity 무료강의 1챕터).",
+     "좋은 가설 + 1차 지표/가드레일 정하기.",
+     "표본 크기·기간 감 잡기(온라인 계산기 사용).",
+     "무작위 배정·세그먼트 주의점.",
+     "주간 회고."]},
+   {t:"W18 · A/B 해석 & 함정", goal:"결과를 올바르게 읽고 산출물을 만든다.", days:[
+     "유의성 vs 실질 효과크기 구분.",
+     "흔한 함정: 피킹(peeking)·다중검정·심슨의 역설.",
+     "'내 제품 기능 실험 설계서' 작성 시작(가상의 개선안).",
+     "실험 설계서 마무리(지표·기간·가드레일·해석 기준).",
+     "Phase 4 회고."]},
+ ]},
+ {phase:"Phase 5 · 스토리텔링 & 대시보드", color:"--blue", weeks:[
+   {t:"W19 · 스토리텔링 원칙", goal:"데이터가 아니라 '메시지'를 전달한다.", days:[
+     "Storytelling with Data 핵심 원칙 요약 읽기.",
+     "'청중 → 메시지 → 차트' 순서로 생각하는 연습.",
+     "잡동사니(clutter) 제거 before/after 1개 만들기.",
+     "강조(색·굵기)로 시선 유도 연습.",
+     "주간 회고."]},
+   {t:"W20 · 차트 설계", goal:"상황에 맞는 차트를 고른다.", days:[
+     "차트 선택 가이드(비교·추세·구성·관계).",
+     "나쁜 차트 리메이크 1개.",
+     "색·정렬 원칙(의미 있는 색만).",
+     "라벨/주석으로 '인사이트를 차트가 말하게' 하기.",
+     "주간 회고."]},
+   {t:"W21 · 대시보드 도구", goal:"Tableau Public(또는 사내 BI) 기초.", days:[
+     "Tableau Public 설치/가입 + 데이터 연결.",
+     "차원/측정값 + 기본 뷰 만들기.",
+     "필터 + 계산 필드.",
+     "여러 뷰를 대시보드로 조합.",
+     "주간 회고."]},
+   {t:"W22 · 대시보드 산출물", goal:"포트폴리오 #2 — 의사결정용 대시보드.", days:[
+     "청중 정의 + 그들이 답해야 할 핵심 질문.",
+     "지표/뷰 설계.",
+     "대시보드 제작.",
+     "1페이지 내러티브('So what?' 한 줄 결론) 작성.",
+     "Phase 5 회고. 🎉 포트폴리오 #2!"]},
+ ]},
+ {phase:"Phase 6 · 종합 데이터 기획 프로젝트", color:"--accent", weeks:[
+   {t:"W23 · 문제 정의 & 지표", goal:"내 직무의 진짜 문제 1개를 정조준한다.", days:[
+     "후보 문제 3개 → 1개 선정(임팩트 × 실현가능성).",
+     "문제를 한 문장으로 + 이해관계자 정리.",
+     "현황(baseline) 지표 정의.",
+     "목표/성공 기준 설정.",
+     "주간 회고."]},
+   {t:"W24 · 분석", goal:"주장을 데이터로 뒷받침한다.", days:[
+     "필요한 데이터/질문 목록화.",
+     "SQL/pandas로 근거 1 수집.",
+     "근거 2 수집 + 시각화.",
+     "인사이트 3문장으로 압축.",
+     "주간 회고."]},
+   {t:"W25 · 제안 & 실험", goal:"분석을 '결정'으로 연결한다.", days:[
+     "개선안 2~3개 발산.",
+     "1개 선택 + 근거.",
+     "실험 설계(지표·기간·가드레일).",
+     "예상 효과 / 리스크 / 비용 정리.",
+     "주간 회고."]},
+   {t:"W26 · 의사결정 문서 & 대회고", goal:"1-pager로 설득하고 다음 6개월을 그린다.", days:[
+     "1-pager 구조 잡기(문제-근거-제안-실험-기대효과).",
+     "초안 작성.",
+     "시각자료 첨부 + 다듬기.",
+     "(가상) 발표 리허설 / 동료 피드백 받기.",
+     "6개월 대회고 + 다음 6개월 로드맵 스케치. 🎓 수료!"]},
+ ]},
+];
+
+/* 칭찬 메시지 */
+const PRAISE = [
+ "오늘도 1시간, 미래의 너가 고마워한다.","꾸준함이 재능을 이긴다. 한 칸 전진.","작은 벽돌 하나가 또 쌓였다.",
+ "이게 바로 복리다. 오늘의 1시간이 내년에 큰 차이로.","멈추지 않는 사람이 결국 도착한다.","좋았어. 내 제품에 적용할 한 줄도 잊지 말기.",
+ "오늘의 너는 어제보다 분명히 낫다.","계획대로 가는 중. 신뢰가 쌓인다."];
+
+/* ============================ 로직 ============================ */
+const LS='dgl_v1';
+let state=load();
+
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(LS));if(s)return s;}catch(e){}
+  return {start:todayISO(), done:{}};
+}
+function save(){localStorage.setItem(LS,JSON.stringify(state));}
+function todayISO(d){d=d||new Date();const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${dd}`;}
+function parseISO(s){const[y,m,dd]=s.split('-').map(Number);return new Date(y,m-1,dd);}
+
+/* 평일만 카운트해서 시작일~오늘 사이 '학습일 차'를 구한다 (1-indexed) */
+function weekdaysBetween(startISO, endISO){
+  let s=parseISO(startISO), e=parseISO(endISO), c=0;
+  if(e<s) return 0;
+  for(let d=new Date(s); d<=e; d.setDate(d.getDate()+1)){
+    const w=d.getDay(); if(w!==0 && w!==6) c++;
+  }
+  return c;
+}
+/* n번째 학습일(평일)의 날짜 ISO 반환 (1-indexed) */
+function dateOfDayIndex(n){
+  let d=parseISO(state.start), c=0;
+  while(true){
+    const w=d.getDay();
+    if(w!==0 && w!==6){c++; if(c===n) return todayISO(d);}
+    d.setDate(d.getDate()+1);
+  }
+}
+
+/* 커리큘럼 평탄화 */
+const FLAT=[];
+CURRICULUM.forEach((ph,pi)=>ph.weeks.forEach((wk,wi)=>wk.days.forEach((task,di)=>{
+  FLAT.push({key:`${pi}-${wi}-${di}`, pi, wi, di, phase:ph.phase, color:ph.color, week:wk.t, goal:wk.goal, task});
+})));
+const TOTAL=FLAT.length;
+
+function currentDayNum(){
+  const n=weekdaysBetween(state.start, todayISO());
+  return Math.min(Math.max(n,1), TOTAL);
+}
+function doneCount(){return Object.values(state.done).filter(Boolean).length;}
+
+function curStreak(){
+  // 현재 일차에서 거꾸로 연속 완료 카운트
+  let cur=currentDayNum(), c=0;
+  for(let i=cur;i>=1;i--){ if(state.done[FLAT[i-1].key]) c++; else break; }
+  return c;
+}
+function maxStreak(){
+  let best=0,run=0;
+  for(let i=0;i<TOTAL;i++){ if(state.done[FLAT[i].key]){run++; best=Math.max(best,run);} else run=0; }
+  return best;
+}
+
+/* ---- 렌더 ---- */
+function renderStats(){
+  const cur=currentDayNum();
+  document.getElementById('dayNum').innerHTML=cur+'<small> / '+TOTAL+'일</small>';
+  document.getElementById('streak').textContent=curStreak();
+  const pct=Math.round(doneCount()/TOTAL*100);
+  document.getElementById('pct').textContent=pct;
+  document.getElementById('progbar').style.width=pct+'%';
+}
+function renderToday(){
+  const cur=currentDayNum(), t=FLAT[cur-1];
+  document.getElementById('todayPhase').textContent=t.phase;
+  document.getElementById('todayWeek').textContent=t.week;
+  document.getElementById('todayGoal').textContent='이번 주 목표 · '+t.goal;
+  document.getElementById('todayTask').textContent=t.task;
+  document.getElementById('todayDate').textContent=todayISO()+' · '+cur+'일차';
+  const done=!!state.done[t.key];
+  const b=document.getElementById('doneBtn');
+  b.textContent=done?'완료됨 ✓ (취소하려면 클릭)':'오늘 숙제 완료 ✓';
+  b.className='btn'+(done?' done':'');
+  document.getElementById('todayMsg').textContent=done?PRAISE[cur%PRAISE.length]:'';
+}
+function toggleToday(){
+  const cur=currentDayNum(), t=FLAT[cur-1];
+  state.done[t.key]=!state.done[t.key]; save(); renderAll();
+}
+function renderRoad(){
+  const root=document.getElementById('road'); root.innerHTML='';
+  const cur=currentDayNum(); const curKey=FLAT[cur-1].key;
+  CURRICULUM.forEach((ph,pi)=>{
+    // phase 진도
+    let tot=0,dn=0;
+    ph.weeks.forEach((wk,wi)=>wk.days.forEach((_,di)=>{tot++; if(state.done[`${pi}-${wi}-${di}`])dn++;}));
+    const pctp=Math.round(dn/tot*100);
+    const det=document.createElement('details'); det.className='phase'; if(pi===FLAT[cur-1].pi)det.open=true;
+    let html=`<summary><span style="color:var(${ph.color})">${ph.phase}</span>
+      <span class="pbar"><i style="width:${pctp}%"></i></span>
+      <span class="pill">${dn}/${tot}</span></summary><div style="padding:4px 10px 10px">`;
+    ph.weeks.forEach((wk,wi)=>{
+      html+=`<div class="week"><h4>${wk.t}</h4><div class="goal">${wk.goal}</div>`;
+      wk.days.forEach((task,di)=>{
+        const key=`${pi}-${wi}-${di}`; const dd=state.done[key];
+        const isCur=key===curKey;
+        html+=`<div class="day${dd?' done':''}${isCur?' cur':''}">
+          <input type="checkbox" ${dd?'checked':''} onchange="toggleKey('${key}')">
+          <label onclick="toggleKey('${key}')"><span class="dl">D${di+1}</span>${task}</label></div>`;
+      });
+      html+=`</div>`;
+    });
+    det.innerHTML=html+'</div>'; root.appendChild(det);
+  });
+}
+function toggleKey(k){state.done[k]=!state.done[k];save();renderAll();}
+
+function renderLog(){
+  const grid=document.getElementById('logGrid'); grid.innerHTML='';
+  const cur=currentDayNum();
+  let dn=0,miss=0;
+  for(let i=1;i<=TOTAL;i++){
+    const c=document.createElement('div'); c.className='cell';
+    const key=FLAT[i-1].key;
+    if(state.done[key]){c.classList.add('done');dn++;}
+    else if(i<cur){c.classList.add('miss');miss++;}
+    c.title=`${i}일차 · ${dateOfDayIndex(i)} · ${FLAT[i-1].week}`;
+    grid.appendChild(c);
+  }
+  document.getElementById('doneCount').textContent=dn;
+  document.getElementById('missCount').textContent=miss;
+  document.getElementById('maxStreak').textContent=maxStreak();
+}
+function renderSettings(){document.getElementById('startInput').value=state.start;}
+
+function renderAll(){renderStats();renderToday();renderRoad();renderLog();renderSettings();}
+
+/* 탭 */
+document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  ['today','road','res','log','set'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById(tab.dataset.t).style.display='';
+});
+
+/* 설정 */
+function saveStart(){const v=document.getElementById('startInput').value; if(v){state.start=v;save();renderAll();alert('시작일 저장됨: '+v);}}
+function resetAll(){if(confirm('모든 진도/완료 기록을 지웁니다. 계속할까요?')){state={start:todayISO(),done:{}};save();renderAll();}}
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='data-growth-lab-backup-'+todayISO()+'.json'; a.click();
+}
+function importData(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader(); r.onload=()=>{try{const s=JSON.parse(r.result); if(s.start&&s.done){state=s;save();renderAll();alert('복원 완료');}else alert('형식이 올바르지 않습니다.');}catch(err){alert('복원 실패: '+err.message);}};
+  r.readAsText(f);
+}
+
+renderAll();
+</script>
+</body>
+</html>
