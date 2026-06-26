@@ -117,6 +117,11 @@
         <a class="vbtn" id="tVideo" href="#" target="_blank"><span class="play">▶</span><span id="tVideoLabel">영상</span></a>
       </div>
 
+      <div style="margin-top:12px">
+        <div class="sec" style="color:var(--purple)">📰 이번 주 읽을거리</div>
+        <a class="vbtn" id="tArticle" href="#" target="_blank"><span style="color:var(--purple)">📄</span><span id="tArticleLabel">기사</span></a>
+      </div>
+
       <div style="margin-top:16px">
         <div class="sec g">📖 이번 주 가이드 — 이렇게 접근하세요</div>
         <div class="guide" id="tGuide"></div>
@@ -131,6 +136,9 @@
 
       <div class="sec s">✍️ 내 답안 작성</div>
       <textarea id="tAnswer" placeholder="여기에 오늘 과제의 답을 적으세요. (배운 점, 푼 쿼리/코드, 작성한 지표 정의, 생각 등 무엇이든. 제출하면 클로드가 채점해줍니다.)"></textarea>
+
+      <div class="sec" style="color:var(--purple);margin-top:16px">📰 읽고 느낀 점 / 요약 <span style="color:var(--muted);font-weight:400">— 읽을거리 읽었으면 적기 (이해도 점검)</span></div>
+      <textarea id="tReflection" placeholder="이번 주 읽을거리를 읽고 ① 핵심 3줄 요약 ② 느낀 점·궁금한 점을 적으세요. 제출하면 클로드가 '제대로 이해했는지'도 함께 봐줍니다. (안 읽었으면 비워둬도 됩니다)"></textarea>
 
       <div class="filewrap">
         <label class="btn ghost sm">🖼 스크린샷 선택<input type="file" accept="image/*" style="display:none" onchange="previewImg(event)"></label>
@@ -484,6 +492,35 @@ const CURRICULUM=[
  ]},
 ];
 const PRAISE=["오늘도 1시간, 미래의 당신이 고마워합니다.","꾸준함이 재능을 이깁니다.","제출했다는 것 자체가 실력입니다.","오늘의 당신은 어제보다 분명히 낫습니다.","계획대로 가는 중. 신뢰가 쌓입니다.","좋아요. 클로드 피드백에서 한 가지만 챙기세요.","멈추지 않는 사람이 결국 도착합니다."];
+/* 주차별 읽을거리(기사) — [라벨, URL] */
+const WEEK_ARTICLES=[
+ ["데이터 분석가 로드맵·회고 (데이터리안)","https://velog.io/@datarian/roadmap"],
+ ["좋은 분석 질문 던지는 법 (검색)","https://www.google.com/search?q=좋은+데이터+분석+질문+던지는+법"],
+ ["북극성 지표 찾기 (AB180)","https://blog.ab180.co/posts/how-to-find-north-star-metric"],
+ ["KPI 트리·HEART 지표 설계 (검색)","https://www.google.com/search?q=KPI+트리+지표+설계+HEART+프레임워크"],
+ ["PM을 위한 지표 예시 (변성윤)","https://zzsza.github.io/data-for-pm/metric/examples.html"],
+ ["데이터 분석을 위한 SQL 공부법 (brunch)","https://brunch.co.kr/@minu-log/5"],
+ ["SQL JOIN 쉽게 이해하기 (검색)","https://www.google.com/search?q=SQL+JOIN+쉽게+이해+블로그"],
+ ["SQL 서브쿼리·CTE 활용 (검색)","https://www.google.com/search?q=SQL+서브쿼리+CTE+WITH+활용"],
+ ["SQL 윈도우 함수 실무 (검색)","https://www.google.com/search?q=SQL+윈도우+함수+실무+활용"],
+ ["비전공자 파이썬 데이터분석 시작 (검색)","https://www.google.com/search?q=비전공자+파이썬+데이터분석+시작"],
+ ["판다스 입문 핵심 정리 (검색)","https://www.google.com/search?q=판다스+pandas+입문+핵심+정리"],
+ ["판다스 groupby·pivot 활용 (검색)","https://www.google.com/search?q=판다스+groupby+pivot+활용"],
+ ["데이터 시각화 차트 선택 (검색)","https://www.google.com/search?q=데이터+시각화+차트+선택+가이드"],
+ ["탐색적 데이터 분석(EDA) 사례 (검색)","https://www.google.com/search?q=탐색적+데이터+분석+EDA+사례"],
+ ["상관관계 ≠ 인과관계 사례 (검색)","https://www.google.com/search?q=상관관계+인과관계+차이+사례"],
+ ["p값·신뢰구간 쉽게 이해 (검색)","https://www.google.com/search?q=p값+신뢰구간+쉽게+이해"],
+ ["A/B 테스트 설계 사례 (검색)","https://www.google.com/search?q=AB+테스트+설계+사례+국내"],
+ ["A/B 테스트 함정 (검색)","https://www.google.com/search?q=AB+테스트+함정+심슨의+역설+피킹"],
+ ["데이터 스토리텔링 사례 (검색)","https://www.google.com/search?q=데이터+스토리텔링+사례"],
+ ["좋은 차트 vs 나쁜 차트 (검색)","https://www.google.com/search?q=좋은+차트+나쁜+차트+사례"],
+ ["태블로 대시보드 입문 후기 (검색)","https://www.google.com/search?q=태블로+대시보드+입문+후기"],
+ ["좋은 대시보드 설계 원칙 (검색)","https://www.google.com/search?q=좋은+대시보드+설계+원칙"],
+ ["데이터 분석 문제 정의 (검색)","https://www.google.com/search?q=데이터+분석+문제+정의+기획"],
+ ["데이터 분석 실무 인사이트 사례 (검색)","https://www.google.com/search?q=데이터+분석+실무+사례+인사이트"],
+ ["데이터 기반 의사결정 사례 (검색)","https://www.google.com/search?q=데이터+기반+의사결정+사례"],
+ ["데이터 분석 포트폴리오·1페이저 (검색)","https://www.google.com/search?q=데이터+분석+포트폴리오+원페이저"]
+];
 
 /* ============ 로직 ============ */
 const LS='dgl_v2';
@@ -499,10 +536,10 @@ function parseISO(s){const[y,m,dd]=s.split('-').map(Number);return new Date(y,m-
 function weekdaysBetween(a,b){let s=parseISO(a),e=parseISO(b),c=0;if(e<s)return 0;for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){const w=d.getDay();if(w!==0&&w!==6)c++;}return c;}
 function dateOfDayIndex(n){let d=parseISO(state.start),c=0;while(true){const w=d.getDay();if(w!==0&&w!==6){c++;if(c===n)return todayISO(d);}d.setDate(d.getDate()+1);}}
 
-const FLAT=[];
-CURRICULUM.forEach((ph,pi)=>ph.weeks.forEach((wk,wi)=>wk.days.forEach((d,di)=>{
-  FLAT.push({pi,wi,di,phase:ph.phase,color:ph.color,week:wk.t,goal:wk.goal,guide:wk.guide,video:wk.video,q:d[0],hint:d[1]});
-})));
+const FLAT=[];let __w=-1;
+CURRICULUM.forEach(function(ph,pi){ph.weeks.forEach(function(wk,wi){__w++;wk.days.forEach(function(d,di){
+  FLAT.push({pi:pi,wi:wi,di:di,phase:ph.phase,color:ph.color,week:wk.t,goal:wk.goal,guide:wk.guide,video:wk.video,article:WEEK_ARTICLES[__w]||["읽을거리(검색)","https://www.google.com/search?q=데이터+분석"],q:d[0],hint:d[1]});
+});});});
 const TOTAL=FLAT.length;
 function rec(n){if(!state.data[n])state.data[n]={};return state.data[n];}
 function currentDayNum(){return Math.min(Math.max(weekdaysBetween(state.start,todayISO()),1),TOTAL);}
@@ -538,12 +575,15 @@ function renderToday(){
   document.getElementById('tDate').textContent=dateOfDayIndex(n)+' · '+n+'일차';
   document.getElementById('tVideo').href=it.video[1];
   document.getElementById('tVideoLabel').textContent=it.video[0];
+  document.getElementById('tArticle').href=it.article[1];
+  document.getElementById('tArticleLabel').textContent=it.article[0];
   document.getElementById('tGuide').textContent=it.guide;
   document.getElementById('tGoal').textContent='이번 주 목표 · '+it.goal;
   document.getElementById('tN').textContent=n;
   document.getElementById('tQ').textContent=it.q;
   document.getElementById('tHint').textContent='💡 '+it.hint;
   document.getElementById('tAnswer').value=r.answer||'';
+  document.getElementById('tReflection').value=r.reflection||'';
   // 제출 상태
   const badge=document.getElementById('subBadge');
   badge.style.display=r.submitted?'inline':'none';
@@ -560,17 +600,21 @@ function renderToday(){
   else{vb.style.display='none';const mv=motiv();mb.style.display='block';document.getElementById('motivText').innerHTML=mv.t+'&nbsp; '+mv.m;}
 }
 function onAnswerInput(){const n=activeDay();rec(n).answer=document.getElementById('tAnswer').value;save();}
+function onReflectionInput(){const n=activeDay();rec(n).reflection=document.getElementById('tReflection').value;save();}
 function submitToday(){
   const n=activeDay(),it=FLAT[n-1],r=rec(n);
   r.answer=document.getElementById('tAnswer').value;
+  r.reflection=document.getElementById('tReflection').value;
   if(!r.answer.trim()){if(!confirm('답안이 비어 있어요. 그래도 제출 양식을 만들까요?\n(막힌 점을 적어 제출해도 클로드가 도와줍니다)'))return;}
   r.submitted=true;state.lastSubmitISO=todayISO();save();
   document.getElementById('subBadge').style.display='inline';
   document.getElementById('submitBtn').textContent='다시 제출 만들기 📤';
   const fence='```';
-  const obj={day:n,phase:it.phase,week:it.week,goal:it.goal,question:it.q,answer:r.answer};
-  const prompt=['당신은 데이터 분석·기획 학습 멘토입니다. 아래 [학습 데이터] JSON을 보고 제 오늘 과제 답안을 채점해 주세요.','',
-    '평가 기준:','1) 점수(10점 만점) + 한 줄 총평','2) 잘한 점(구체적으로)','3) 부족하거나 틀린 점 / 흔한 오해','4) 더 나은 모범답안 또는 핵심 힌트','5) 내일을 위한 한 줄 조언',
+  const obj={day:n,phase:it.phase,week:it.week,goal:it.goal,question:it.q,answer:r.answer,article_url:it.article[1],article_reflection:(r.reflection&&r.reflection.trim())?r.reflection:'(작성 안 함)'};
+  const prompt=['당신은 데이터 분석·기획 학습 멘토입니다. 아래 [학습 데이터] JSON을 보고 제 오늘 과제 답안과 기사 감상평을 채점해 주세요.','',
+    '평가 기준:','1) 점수(10점 만점) + 한 줄 총평','2) 잘한 점(구체적으로)','3) 부족하거나 틀린 점 / 흔한 오해','4) 더 나은 모범답안 또는 핵심 힌트',
+    '5) 기사 이해도 — article_reflection이 있으면, 그 기사(article_url)의 핵심을 제대로 이해했는지·오해는 없는지 평가하고 놓친 포인트를 짚어주세요. (감상평이 "작성 안 함"이면 이 항목은 생략)',
+    '6) 내일을 위한 한 줄 조언',
     '※ 답이 부실하면 솔직하게 지적해 주세요. 스크린샷을 첨부했다면 그 코드/결과/차트도 함께 평가해 주세요.','',
     '[학습 데이터]',fence+'json',JSON.stringify(obj,null,2),fence].join('\n');
   document.getElementById('gradeText').textContent=prompt;
@@ -624,6 +668,7 @@ function switchTab(t){document.querySelectorAll('.tab').forEach(x=>x.classList.t
   ['today','road','res','log','set'].forEach(id=>document.getElementById(id).style.display=(id===t?'':'none'));}
 document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>switchTab(tab.dataset.t));
 document.getElementById('tAnswer').addEventListener('input',onAnswerInput);
+document.getElementById('tReflection').addEventListener('input',onReflectionInput);
 
 function saveStart(){const v=document.getElementById('startInput').value;if(v){state.start=v;save();renderAll();alert('시작일 저장: '+v);}}
 function resetAll(){if(confirm('모든 답안·진도·점수를 지웁니다. 계속할까요?')){state={start:todayISO(),data:{}};viewDay=null;save();renderAll();}}
