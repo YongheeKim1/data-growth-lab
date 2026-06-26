@@ -72,6 +72,7 @@
   input[type=date]{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px}
   .banner{background:rgba(91,157,255,.12);border:1px solid rgba(91,157,255,.4);color:#bcd4ff;border-radius:10px;padding:9px 12px;font-size:13px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
   .banner a{cursor:pointer;font-weight:700}
+  .banner.motiv{background:rgba(255,122,24,.1);border-color:rgba(255,122,24,.45);color:var(--accent2);display:block}
 </style>
 </head>
 <body>
@@ -85,7 +86,7 @@
   </header>
 
   <div class="stats">
-    <div class="stat"><div class="k">진행 일차 (평일)</div><div class="v" id="dayNum">–<small> / 130</small></div></div>
+    <div class="stat"><div class="k">지금 할 일</div><div class="v" id="dayNum">–<small> / 130</small></div></div>
     <div class="stat"><div class="k">연속 제출</div><div class="v"><span id="streak">0</span><small> 일</small> 🔥</div></div>
     <div class="stat"><div class="k">제출 완료</div><div class="v"><span id="pct">0</span><small>%</small></div>
       <div class="progwrap"><div class="progbar" id="progbar"></div></div></div>
@@ -102,8 +103,9 @@
   <!-- TODAY -->
   <section id="today">
     <div class="banner" id="viewBanner" style="display:none">
-      <span id="viewBannerText"></span><a onclick="goToday()">오늘로 돌아가기 →</a>
+      <span id="viewBannerText"></span><a onclick="goToday()">지금 할 일로 →</a>
     </div>
+    <div class="banner motiv" id="motivBanner" style="display:none"><span id="motivText"></span></div>
     <div class="panel">
       <div class="row" style="justify-content:space-between">
         <div><span class="pill p" id="tPhase">Phase</span> <span class="pill" id="tWeek">Week</span></div>
@@ -160,6 +162,7 @@
           <button class="btn green sm" onclick="saveScore()">점수 저장</button>
           <span id="scoreSaved" style="color:var(--green)"></span>
         </div>
+        <div class="row" style="margin-top:12px"><button class="btn sm" onclick="nextTask()">다음 과제로 →</button></div>
       </div>
     </div>
 
@@ -503,14 +506,27 @@ CURRICULUM.forEach((ph,pi)=>ph.weeks.forEach((wk,wi)=>wk.days.forEach((d,di)=>{
 const TOTAL=FLAT.length;
 function rec(n){if(!state.data[n])state.data[n]={};return state.data[n];}
 function currentDayNum(){return Math.min(Math.max(weekdaysBetween(state.start,todayISO()),1),TOTAL);}
-function activeDay(){return viewDay||currentDayNum();}
+function expectedDay(){return Math.min(Math.max(weekdaysBetween(state.start,todayISO()),1),TOTAL);}
+function nextDueDay(){for(let i=1;i<=TOTAL;i++){if(!(state.data[i]&&state.data[i].submitted))return i;}return TOTAL+1;}
 function submittedCount(){return Object.values(state.data).filter(x=>x&&x.submitted).length;}
-function curStreak(){let cur=currentDayNum(),c=0;for(let i=cur;i>=1;i--){if(state.data[i]&&state.data[i].submitted)c++;else break;}return c;}
+function behindDays(){return Math.max(0,expectedDay()-submittedCount());}
+function activeDay(){return viewDay||Math.min(nextDueDay(),TOTAL);}
+function curStreak(){let cur=nextDueDay()-1,c=0;for(let i=cur;i>=1;i--){if(state.data[i]&&state.data[i].submitted)c++;else break;}return c;}
+function motiv(){
+  const due=nextDueDay(),sub=submittedCount(),beh=behindDays();
+  if(due>TOTAL)return{t:'🎓',m:'130일 전부 제출 완료! 정말 대단해요.'};
+  if(sub===0&&beh<=1)return{t:'🌱',m:'오늘부터 시작! Day 1 딱 하나만 끝내면 됩니다.'};
+  if(sub===0)return{t:'🌱',m:'시작 후 '+beh+'일 지났어요. 부담 갖지 말고 Day 1 하나만 끝내요.'};
+  if(beh<=0)return{t:'🔥',m:'완벽하게 일정대로 가고 있어요! 이제 Day '+due+' 차례.'};
+  if(beh<=2)return{t:'⏳',m:beh+'일 밀렸어요. 오늘 Day '+due+' 하나면 거의 따라잡아요!'};
+  return{t:'🫶',m:beh+'일째 밀려있어요. 완벽 말고 오늘 하나! Day '+due+'부터 다시 시작.'};
+}
 function maxStreak(){let b=0,r=0;for(let i=1;i<=TOTAL;i++){if(state.data[i]&&state.data[i].submitted){r++;b=Math.max(b,r);}else r=0;}return b;}
 function avgScore(){let s=[];Object.values(state.data).forEach(x=>{if(x&&typeof x.score==='number')s.push(x.score);});return s.length?(s.reduce((a,b)=>a+b,0)/s.length).toFixed(1):null;}
 
 function renderStats(){
-  document.getElementById('dayNum').innerHTML=currentDayNum()+'<small> / '+TOTAL+'</small>';
+  const due=nextDueDay();
+  document.getElementById('dayNum').innerHTML=(due>TOTAL?'완료':('Day '+due))+'<small> / '+TOTAL+'</small>';
   document.getElementById('streak').textContent=curStreak();
   const p=Math.round(submittedCount()/TOTAL*100);
   document.getElementById('pct').textContent=p;document.getElementById('progbar').style.width=p+'%';
@@ -538,17 +554,17 @@ function renderToday(){
   document.getElementById('scoreInput').value=(typeof r.score==='number')?r.score:'';
   document.getElementById('scoreSaved').textContent=(typeof r.score==='number')?('저장됨: '+r.score+'/10'):'';
   document.getElementById('imgPrev').style.display='none';
-  // 뷰 배너
-  const vb=document.getElementById('viewBanner');
-  if(viewDay&&viewDay!==currentDayNum()){vb.style.display='flex';document.getElementById('viewBannerText').textContent='지난/다른 날(Day '+viewDay+')을 보고 있어요.';}
-  else vb.style.display='none';
+  // 배너 (밀림 동기부여 / 다른 날 보기)
+  const vb=document.getElementById('viewBanner'),mb=document.getElementById('motivBanner');
+  if(viewDay){vb.style.display='flex';document.getElementById('viewBannerText').textContent='다른 날(Day '+viewDay+')을 보고 있어요.';mb.style.display='none';}
+  else{vb.style.display='none';const mv=motiv();mb.style.display='block';document.getElementById('motivText').innerHTML=mv.t+'&nbsp; '+mv.m;}
 }
 function onAnswerInput(){const n=activeDay();rec(n).answer=document.getElementById('tAnswer').value;save();}
 function submitToday(){
   const n=activeDay(),it=FLAT[n-1],r=rec(n);
   r.answer=document.getElementById('tAnswer').value;
   if(!r.answer.trim()){if(!confirm('답안이 비어 있어요. 그래도 제출 양식을 만들까요?\n(막힌 점을 적어 제출해도 클로드가 도와줍니다)'))return;}
-  r.submitted=true;save();
+  r.submitted=true;state.lastSubmitISO=todayISO();save();
   document.getElementById('subBadge').style.display='inline';
   document.getElementById('submitBtn').textContent='다시 제출 만들기 📤';
   const fence='```';
@@ -572,7 +588,7 @@ function previewImg(e){const f=e.target.files[0];if(!f)return;const img=document
   document.getElementById('tMsg').textContent='첨부 미리보기 OK · 제출 후 클로드 채팅에도 이 이미지를 올려주세요.';}
 
 function renderRoad(){
-  const root=document.getElementById('road');root.innerHTML='';const cur=currentDayNum();
+  const root=document.getElementById('road');root.innerHTML='';const cur=activeDay();
   let g=0;
   CURRICULUM.forEach((ph,pi)=>{
     const startG=g;let tot=0,dn=0;
@@ -588,8 +604,9 @@ function renderRoad(){
     det.innerHTML=h+'</div>';root.appendChild(det);
   });
 }
-function openDay(n){viewDay=(n===currentDayNum())?null:n;switchTab('today');renderToday();window.scrollTo({top:0,behavior:'smooth'});}
+function openDay(n){viewDay=(n===Math.min(nextDueDay(),TOTAL))?null:n;switchTab('today');renderToday();window.scrollTo({top:0,behavior:'smooth'});}
 function goToday(){viewDay=null;renderToday();}
+function nextTask(){viewDay=null;renderAll();switchTab('today');window.scrollTo({top:0,behavior:'smooth'});}
 
 function renderLog(){
   const grid=document.getElementById('logGrid');grid.innerHTML='';const cur=currentDayNum();let dn=0;
